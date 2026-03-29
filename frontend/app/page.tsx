@@ -82,8 +82,11 @@ export default function Home() {
         <StatsPanel />
       </div>
 
-      <footer className="text-center py-8 text-gray-600 text-sm">
-        PassFort — Passwords analyzed locally · Stats are anonymous
+      <footer className="text-center py-8 px-4 text-gray-600 text-sm space-y-2">
+        <p>PassFort — Passwords analyzed locally · Stats are anonymous</p>
+        <p className="text-gray-500">
+          Developed by <span className="text-[var(--accent)]/80">Saichandram Sadhu</span>
+        </p>
       </footer>
     </main>
   )

@@ -15,6 +15,7 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: "PassFort",
   description: "Password strength analyzer",
+  authors: [{ name: "Saichandram Sadhu" }],
 };
 
 export default function RootLayout({

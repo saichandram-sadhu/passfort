@@ -1,17 +1,100 @@
 # PassFort
 
+[![CI](https://github.com/saichandram-sadhu/passfort/actions/workflows/ci.yml/badge.svg)](https://github.com/saichandram-sadhu/passfort/actions/workflows/ci.yml)
+
 A full-stack password strength analyzer. Passwords are analyzed entirely in your browser — nothing sensitive ever leaves your device.
 
 ## Screenshot
 
 ![PassFort — hero, privacy notice, and password analyzer](docs/screenshot.png)
 
+## How it works (animated diagrams)
+
+GitHub renders these **Mermaid** diagrams when you view this file on the web.
+
+### User & privacy flow
+
+```mermaid
+flowchart LR
+  subgraph Browser["Your browser"]
+    A[Type password] --> B[analyzePassword]
+    B --> C[Score · entropy · patterns]
+    C --> D[UI updates instantly]
+    B -.->|never sent| E[(Password)]
+  end
+  subgraph API["Backend (metadata only)"]
+    F[POST /api/stats]:::meta
+    G[GET /api/dictionary]:::meta
+  end
+  D -->|debounced 800ms| F
+  G -->|word list| B
+  classDef meta fill:#1a1a28,stroke:#00ffcc,color:#e0e0e0;
+```
+
+### Request sequence (dictionary + stats)
+
+```mermaid
+sequenceDiagram
+  participant U as User
+  participant FE as Next.js app
+  participant API as FastAPI
+  participant DB as PostgreSQL
+
+  U->>FE: Types password
+  FE->>FE: Local analysis (TS engine)
+  Note over FE: No password over network
+
+  FE->>API: GET /api/dictionary (once)
+  API-->>FE: common words list
+
+  FE->>API: POST /api/stats (debounced)
+  Note right of API: score, length, crack_time, flags only
+  API->>DB: INSERT password_stats
+  API-->>FE: 200 OK
+
+  FE->>API: GET /api/stats (dashboard)
+  API->>DB: aggregates
+  API-->>FE: totals & averages
+```
+
+### CI pipeline (GitHub Actions)
+
+```mermaid
+flowchart TB
+  subgraph Push["git push"]
+    P[origin/main or master]
+  end
+  subgraph CI["GitHub Actions — CI"]
+    F[frontend: npm ci → test → build]
+    B[backend: pip install → pytest]
+  end
+  P --> F
+  P --> B
+```
+
+### Deploy overview
+
+```mermaid
+flowchart LR
+  subgraph Vercel
+    V[Next.js frontend]
+  end
+  subgraph Railway
+    R[FastAPI]
+    PG[(PostgreSQL)]
+  end
+  V -->|NEXT_PUBLIC_API_URL| R
+  R --> PG
+```
+
 ## Project Structure
 
 ```
 passfort/
 ├── frontend/   # Next.js 14 + Tailwind + Framer Motion + Three.js + GSAP
-└── backend/    # FastAPI + PostgreSQL
+├── backend/    # FastAPI + PostgreSQL
+├── docs/       # Screenshots & extras
+└── .github/workflows/  # CI
 ```
 
 ## Features
@@ -25,78 +108,96 @@ passfort/
 - **Three.js particle background** with GSAP scroll animations
 - **Privacy first** — 100% client-side analysis
 
-## Frontend (Next.js)
+## Quick start
+
+### Frontend (Next.js)
 
 ```bash
 cd frontend
 npm install
-cp .env.example .env.local   # set NEXT_PUBLIC_API_URL
+cp .env.example .env.local   # set NEXT_PUBLIC_API_URL to your API origin
 npm run dev        # http://localhost:3000
-npm run build      # production build
-npm test           # run 40 unit tests
+npm run build
+npm test
 ```
 
-## Backend (FastAPI)
+### Backend (FastAPI)
 
 ```bash
 cd backend
 python -m venv .venv
-.venv/Scripts/activate          # Windows
-# or: source .venv/bin/activate  # Linux/Mac
+# Windows: .venv\Scripts\activate
+# macOS/Linux: source .venv/bin/activate
 pip install -r requirements.txt
-cp .env.example .env            # set DATABASE_URL
-uvicorn main:app --reload       # http://localhost:8000
-pytest tests/ -v                # run 4 backend tests
+cp .env.example .env
+# Optional: SKIP_DB_INIT=1 if PostgreSQL is not running yet
+uvicorn main:app --reload --host 127.0.0.1 --port 8000
+pytest tests/ -v
 ```
 
 ## Deploy
 
-### Backend → Railway
+### 1. Push to GitHub
 
-1. Create new Railway project, add PostgreSQL service
-2. Deploy `passfort/backend/` as the root
-3. Set environment variables:
-   ```
-   DATABASE_URL=<Railway PostgreSQL URL — auto-provided>
-   ALLOWED_ORIGINS=https://your-vercel-app.vercel.app
-   PORT=8000
-   ```
-4. Railway auto-detects `railway.toml` and runs `uvicorn main:app --host 0.0.0.0 --port $PORT`
+```bash
+git remote add origin https://github.com/saichandram-sadhu/passfort.git
+git branch -M main   # optional: rename master → main
+git push -u origin main
+```
 
-> **Important:** If Railway provides a `postgresql://` URL, the backend normalizes it to `postgresql+asyncpg://` automatically.
+CI runs automatically on every push (see badge at top).
 
-### Frontend → Vercel
+### 2. Backend → [Railway](https://railway.app)
 
-1. Import `passfort/frontend/` as a Vercel project (set root directory to `frontend/`)
-2. Set environment variable:
-   ```
-   NEXT_PUBLIC_API_URL=https://your-railway-app.up.railway.app
-   ```
-3. Vercel auto-detects Next.js and deploys
+1. New project → add **PostgreSQL**.
+2. Deploy from GitHub repo; set **root directory** to `backend/`.
+3. Variables:
 
-## Architecture
+   | Variable | Value |
+   |----------|--------|
+   | `DATABASE_URL` | Use the variable Railway injects from PostgreSQL (backend rewrites `postgresql://` → `postgresql+asyncpg://`). |
+   | `ALLOWED_ORIGINS` | Your Vercel URL, e.g. `https://passfort.vercel.app` |
+   | `PORT` | Railway sets this automatically. |
+
+4. After deploy, copy the public API URL (e.g. `https://xxx.up.railway.app`).
+
+### 3. Frontend → [Vercel](https://vercel.com)
+
+1. Import the same GitHub repo; set **root directory** to `frontend/`.
+2. Environment variable:
+
+   | Variable | Value |
+   |----------|--------|
+   | `NEXT_PUBLIC_API_URL` | Your Railway API URL (no trailing slash). |
+
+3. Deploy. Update `ALLOWED_ORIGINS` on Railway if the Vercel domain changes.
+
+### Local API without PostgreSQL
+
+For quick demos, start the API with **`SKIP_DB_INIT=1`**. Dictionary routes work; stats endpoints need a real database.
+
+## Architecture (text)
 
 ```
 Browser
-  ├── analyzePassword()  ← pure TS, no network
-  ├── generateRandom()   ← crypto.getRandomValues
-  ├── generatePassphrase() ← EFF wordlist, lazy-loaded
-  └── (debounced) POST /api/stats  ← score/metadata only, never passwords
+  ├── analyzePassword()     ← pure TS, no network for the secret
+  ├── generateRandom()      ← crypto.getRandomValues
+  ├── generatePassphrase()  ← EFF wordlist, lazy-loaded
+  └── (debounced) POST /api/stats  ← score/metadata only
 
-FastAPI Backend
-  ├── GET  /api/dictionary  → top-1000 common passwords list (cached 24h)
-  ├── POST /api/stats       → insert anonymous stat row (rate limited: 10/min)
-  └── GET  /api/stats       → global averages (total, avg_score, avg_length)
+FastAPI
+  ├── GET  /api/dictionary  → common-passwords list (cached)
+  ├── POST /api/stats       → anonymous row (rate limited)
+  └── GET  /api/stats       → global aggregates
 
 PostgreSQL
-  └── password_stats (id, score, length, crack_time_seconds, charset_flags, created_at)
+  └── password_stats (score, length, crack_time_seconds, charset_flags, …)
 ```
 
 ## Developer
 
 Developed by **Saichandram Sadhu**.
 
-## Docs
+## License
 
-- Spec: `../docs/superpowers/specs/2026-03-29-passfort-design.md`
-- Plan: `../docs/superpowers/plans/2026-03-29-passfort.md`
+MIT — use freely; no warranty.
