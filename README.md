@@ -1,9 +1,13 @@
 # PassFort
 
+[![Live demo](https://img.shields.io/badge/demo-GitHub%20Pages-00ffcc?logo=github)](https://saichandram-sadhu.github.io/passfort/)
 [![Tests](https://img.shields.io/badge/tests-44%20passing-brightgreen)](#quick-start)
 [![CI](https://github.com/saichandram-sadhu/passfort/actions/workflows/ci.yml/badge.svg)](https://github.com/saichandram-sadhu/passfort/actions/workflows/ci.yml)
+[![Pages](https://github.com/saichandram-sadhu/passfort/actions/workflows/deploy-pages.yml/badge.svg)](https://github.com/saichandram-sadhu/passfort/actions/workflows/deploy-pages.yml)
 
 A full-stack password strength analyzer. Passwords are analyzed entirely in your browser — nothing sensitive ever leaves your device.
+
+**Live site (frontend):** [saichandram-sadhu.github.io/passfort](https://saichandram-sadhu.github.io/passfort/) — auto-deployed from `master` via GitHub Actions. Dictionary + global stats need a deployed API; set `NEXT_PUBLIC_API_URL` in the Pages workflow when your backend URL is ready (see [Deploy](#deploy)).
 
 ## Screenshot
 
@@ -165,16 +169,14 @@ git push -u origin master
 
 4. After deploy, copy the public API URL (e.g. `https://xxx.up.railway.app`).
 
-### 3. Frontend → [Vercel](https://vercel.com)
+### 3. Frontend
 
-1. Import the same GitHub repo; set **root directory** to `frontend/`.
-2. Environment variable:
+**Option A — GitHub Pages (already wired)**  
+Workflow: [`.github/workflows/deploy-pages.yml`](.github/workflows/deploy-pages.yml).  
+Add a [repository secret](https://github.com/saichandram-sadhu/passfort/settings/secrets/actions) **`NEXT_PUBLIC_API_URL`** (e.g. your Railway API URL, no trailing slash). Re-run **Deploy GitHub Pages** so the build embeds it. Put `https://saichandram-sadhu.github.io` in Railway **`ALLOWED_ORIGINS`**.
 
-   | Variable | Value |
-   |----------|--------|
-   | `NEXT_PUBLIC_API_URL` | Your Railway API URL (no trailing slash). |
-
-3. Deploy. Update `ALLOWED_ORIGINS` on Railway if the Vercel domain changes.
+**Option B — [Vercel](https://vercel.com)**  
+Import the repo; **root directory** `frontend/`. Set `NEXT_PUBLIC_API_URL` to your API. For Vercel, do **not** set `NEXT_PUBLIC_BASE_PATH` (leave unset so `basePath` is empty in `next.config.mjs`).
 
 ### Local API without PostgreSQL
 

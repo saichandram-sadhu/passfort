@@ -33,7 +33,8 @@ jobs:
         working-directory: frontend
         env:
           NEXT_PUBLIC_BASE_PATH: /passfort
-          NEXT_PUBLIC_API_URL: ""
+          # Optional repo secret: add NEXT_PUBLIC_API_URL for dictionary + stats (e.g. https://xxx.up.railway.app)
+          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
         run: |
           npm ci
           npm test
