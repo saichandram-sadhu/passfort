@@ -2,6 +2,10 @@
 
 A full-stack password strength analyzer. Passwords are analyzed entirely in your browser — nothing sensitive ever leaves your device.
 
+## Screenshot
+
+![PassFort — hero, privacy notice, and password analyzer](docs/screenshot.png)
+
 ## Project Structure
 
 ```
@@ -87,6 +91,10 @@ FastAPI Backend
 PostgreSQL
   └── password_stats (id, score, length, crack_time_seconds, charset_flags, created_at)
 ```
+
+## Developer
+
+Developed by **Saichandram Sadhu**.
 
 ## Docs
 
