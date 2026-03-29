@@ -1,7 +1,7 @@
 # PassFort
 
 [![Tests](https://img.shields.io/badge/tests-44%20passing-brightgreen)](#quick-start)
-[![CI](https://github.com/saichandram-sadhu/passfort/actions/workflows/ci.yml/badge.svg)](https://github.com/saichandram-sadhu/passfort/actions/workflows/ci.yml) *(green after you [enable Actions](#enable-github-actions-ci))*
+[![CI](https://github.com/saichandram-sadhu/passfort/actions/workflows/ci.yml/badge.svg)](https://github.com/saichandram-sadhu/passfort/actions/workflows/ci.yml)
 
 A full-stack password strength analyzer. Passwords are analyzed entirely in your browser — nothing sensitive ever leaves your device.
 
@@ -60,7 +60,7 @@ sequenceDiagram
 
 ### CI pipeline (GitHub Actions)
 
-After you add [`.github/workflows/ci.yml`](docs/ci-workflow.yml) (see [Enable CI](#enable-github-actions-ci)):
+Runs on every push to `master` / `main` (see [`.github/workflows/ci.yml`](.github/workflows/ci.yml); copy lives in [`docs/ci-workflow.yml`](docs/ci-workflow.yml)).
 
 ```mermaid
 flowchart TB
@@ -96,7 +96,8 @@ flowchart LR
 passfort/
 ├── frontend/   # Next.js 14 + Tailwind + Framer Motion + Three.js + GSAP
 ├── backend/    # FastAPI + PostgreSQL
-└── docs/       # Screenshot + CI workflow template (`ci-workflow.yml`)
+├── docs/       # Screenshot + CI workflow backup (`ci-workflow.yml`)
+└── .github/workflows/  # CI (GitHub Actions)
 ```
 
 ## Features
@@ -137,37 +138,18 @@ uvicorn main:app --reload --host 127.0.0.1 --port 8000
 pytest tests/ -v
 ```
 
-## Enable GitHub Actions (CI)
-
-`gh` / some OAuth tokens cannot push files under `.github/workflows/` without the **`workflow`** scope. This repo ships the workflow as a template:
-
-1. On GitHub open **saichandram-sadhu/passfort** → **Add file** → **Create new file**
-2. Name it **`.github/workflows/ci.yml`**
-3. Paste the contents of [`docs/ci-workflow.yml`](docs/ci-workflow.yml) → **Commit**
-
-**Or** from your machine (after widening token scope):
-
-```bash
-gh auth refresh -s workflow
-mkdir -p .github/workflows
-cp docs/ci-workflow.yml .github/workflows/ci.yml
-git add .github/workflows/ci.yml
-git commit -m "ci: add GitHub Actions workflow"
-git push
-```
-
 ## Deploy
 
-### 1. GitHub
+### 1. GitHub (done)
 
-Remote: **https://github.com/saichandram-sadhu/passfort**
+**Repository:** [github.com/saichandram-sadhu/passfort](https://github.com/saichandram-sadhu/passfort)
 
 ```bash
 git remote add origin https://github.com/saichandram-sadhu/passfort.git   # if missing
-git push -u origin master   # or: main
+git push -u origin master
 ```
 
-After adding `.github/workflows/ci.yml`, CI runs on every push (see badge at top).
+**Note:** If `git push` ever rejects changes under `.github/workflows/` (OAuth `workflow` scope), paste from [`docs/ci-workflow.yml`](docs/ci-workflow.yml) in the GitHub UI, or run `gh auth refresh -s workflow` and push again.
 
 ### 2. Backend → [Railway](https://railway.app)
 
