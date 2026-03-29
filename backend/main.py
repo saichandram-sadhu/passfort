@@ -13,7 +13,9 @@ limiter = Limiter(key_func=get_remote_address)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    await init_db()
+    # Set SKIP_DB_INIT=1 when PostgreSQL is not available (local demo; stats POST/GET will fail until DB exists)
+    if os.environ.get("SKIP_DB_INIT") != "1":
+        await init_db()
     yield
 
 
