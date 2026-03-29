@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Space_Grotesk, JetBrains_Mono } from 'next/font/google';
 import "./globals.css";
+import CyberBackground from "@/components/CyberBackground";
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ['latin'],
@@ -24,6 +25,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${spaceGrotesk.variable} ${jetbrainsMono.variable}`}>
       <body className="antialiased">
+        <CyberBackground />
         {children}
       </body>
     </html>
