@@ -1,6 +1,15 @@
-const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000'
+/** API origin. Undefined → local dev default. Empty string → no backend (e.g. GitHub Pages demo). */
+function apiBase(): string {
+  const v = process.env.NEXT_PUBLIC_API_URL
+  if (v === undefined) return 'http://localhost:8000'
+  if (v === '') return ''
+  return v.replace(/\/$/, '')
+}
+
+const API = apiBase()
 
 export async function fetchDictionary(): Promise<string[]> {
+  if (!API) return []
   try {
     const r = await fetch(`${API}/api/dictionary`)
     if (!r.ok) return []
@@ -24,6 +33,7 @@ export interface StatPayload {
 }
 
 export async function postStats(payload: StatPayload): Promise<void> {
+  if (!API) return
   try {
     await fetch(`${API}/api/stats`, {
       method: 'POST',
@@ -42,6 +52,7 @@ export interface GlobalStats {
 }
 
 export async function getStats(): Promise<GlobalStats | null> {
+  if (!API) return null
   try {
     const r = await fetch(`${API}/api/stats`)
     if (!r.ok) return null
