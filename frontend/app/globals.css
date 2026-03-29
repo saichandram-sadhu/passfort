@@ -1,0 +1,17 @@
+:root {
+  --bg:       #0a0a0f;
+  --surface:  #12121a;
+  --accent:   #00ffcc;
+  --danger:   #ff2d55;
+  --warning:  #ff9f0a;
+  --score-1:  #ff2d55;
+  --score-2:  #ff6b35;
+  --score-3:  #ff9f0a;
+  --score-4:  #ffd60a;
+  --score-5:  #30d158;
+  --font-heading: var(--font-space-grotesk), sans-serif;
+  --font-mono:    var(--font-jetbrains-mono), monospace;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: #e0e0e0; font-family: var(--font-heading); }
